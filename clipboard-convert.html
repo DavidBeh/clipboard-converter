@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Clipboard Konvertierung</title>
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+    <style>
+        button {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    </style>
+    <div>
+        <label>Clipboard text/plain: (ChatGPT)</label><br>
+        <textarea id="plainArea" rows="5" cols="60" readonly></textarea>
+    </div>
+    <div>
+        <button id="plainToHtml" title="Plaintext nach HTML">&#8595;</button>
+        <button id="htmlToPlain" title="HTML nach Plaintext">&#8593;</button>
+        <button id="refreshClipboard">Aktualisieren</button>
+    </div>
+    <div>
+        <label>Clipboard text/html (Confluence):</label><br>
+        <textarea id="htmlArea" rows="5" cols="60" readonly></textarea>
+    </div>
+
+    <script>
+        async function htmlToPlain() {
+            try {
+                const clipboardItems = await navigator.clipboard.read();
+                for (const item of clipboardItems) {
+                    if (item.types.includes('text/html')) {
+                        const blob = await item.getType('text/html');
+                        const html = await blob.text();
+                        // Schreibe html-Inhalt zusätzlich als text/plain ins Clipboard, ohne text/html zu entfernen
+                        const plainBlob = new Blob([html], { type: 'text/plain' });
+                        const htmlBlob = new Blob([html], { type: 'text/html' });
+                        const clipboardItem = new ClipboardItem({
+                            'text/plain': plainBlob,
+                            'text/html': htmlBlob
+                        });
+                        await navigator.clipboard.write([clipboardItem]);
+                        return;
+                    }
+                }
+            } catch (e) {
+                alert('Fehler: ' + e);
+            }
+        }
+
+        async function plainToHtml() {
+            try {
+                const plain = await navigator.clipboard.readText();
+                // Schreibe plain-Inhalt zusätzlich als text/html ins Clipboard, ohne text/plain zu entfernen
+                const plainBlob = new Blob([plain], { type: 'text/plain' });
+                const htmlBlob = new Blob([plain], { type: 'text/html' });
+                const clipboardItem = new ClipboardItem({
+                    'text/plain': plainBlob,
+                    'text/html': htmlBlob
+                });
+                await navigator.clipboard.write([clipboardItem]);
+                return;
+            } catch (e) {
+                alert('Fehler: ' + e);
+            }
+        }
+
+        async function refreshClipboard() {
+            try {
+                // text/plain lesen
+                let plain = '';
+                try {
+                    plain = await navigator.clipboard.readText();
+                } catch {}
+                document.getElementById('plainArea').value = plain;
+
+                // text/html lesen
+                let html = '';
+                try {
+                    const clipboardItems = await navigator.clipboard.read();
+                    for (const item of clipboardItems) {
+                        if (item.types.includes('text/html')) {
+                            const blob = await item.getType('text/html');
+                            html = await blob.text();
+                            break;
+                        }
+                    }
+                } catch {}
+                document.getElementById('htmlArea').value = html;
+            } catch (e) {
+                alert('Fehler beim Lesen des Clipboards: ' + e);
+            }
+        }
+
+        document.getElementById('htmlToPlain').onclick = async () => {
+            await htmlToPlain();
+            await refreshClipboard();
+        };
+        document.getElementById('plainToHtml').onclick = async () => {
+            await plainToHtml();
+            await refreshClipboard();
+        };
+        document.getElementById('refreshClipboard').onclick = refreshClipboard;
+
+
+    </script>
+</body>
+</html>
