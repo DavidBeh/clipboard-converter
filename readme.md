@@ -9,8 +9,8 @@
 5. Ergebnis (z.B. aus LLM) Kopieren
 6. Knopf `↓` im Konverter drücken
 7. In Confluene einfügen
-8. ...
-9. Profit???
+8. ???
+9. Profit!!
 
 ## System Prompt zum Übersetzen
 Empfohlen: Gemini 2.5 Pro bei [aistudio.google.com](https://aistudio.google.com)
